@@ -31,7 +31,7 @@ pip install -e .
 ```
 
 ## Weights
-You can download our weights from [huggingface](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main)
+You can download our weights from [huggingface](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main).
 ## Evaluation
 In RBDash, we evaluate models on MME.
 ### MME
