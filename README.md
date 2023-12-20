@@ -30,15 +30,15 @@ pip uninstall transformers
 pip install -e .
 ```
 
-## Weights
-You can download our weights from [huggingface](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main).
+## Model Zoo
+[RBDash-v1-13b](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main).
 ## Evaluation
 In RBDash, we evaluate models on MME.
 ### MME
 
 1. Download the data following the official instructions [here](https://github.com/BradyFU/Awesome-Multimodal-Large-Language-Models/tree/Evaluation).
-2. Downloaded images to `MME_Benchmark_release_version`.
-3. put the official `eval_tool` and `MME_Benchmark_release_version` under `./playground/data/eval/MME`.
+2. Downloaded images to `./playground/data/eval/MME/MME_Benchmark_release_version`.
+3. Downloaded and put the [weights](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main) to `./models/rbdash-v1-13b`
 4. Single-GPU inference and evaluate.
 ```Shell
 CUDA_VISIBLE_DEVICES=0 bash scripts/v1_5/eval/mme.sh
