@@ -41,5 +41,5 @@ In RBDash, we evaluate models on MME.
 3. Downloaded and put the [weights](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main) to `./models/rbdash-v1-13b`
 4. Single-GPU inference and evaluate.
 ```Shell
-CUDA_VISIBLE_DEVICES=0 bash scripts/v1_5/eval/mme.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/v1/eval/mme.sh
 ```
