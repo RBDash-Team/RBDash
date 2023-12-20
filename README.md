@@ -30,13 +30,8 @@ pip uninstall transformers
 pip install -e .
 ```
 
-### CLI Inference
-```Shell
-python -m rbdash.serve.cli \
-    --model-path models/rbdash-v1-13b \
-    --image-file images/view.jpg \
-    --load-4bit
-```
+## Weights
+You can download our weights from [huggingface](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main)
 ## Evaluation
 In RBDash, we evaluate models on MME.
 ### MME
