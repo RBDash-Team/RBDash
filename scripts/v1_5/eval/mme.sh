@@ -1,7 +1,7 @@
 #!/bin/bash
 
 python -m rbdash.eval.model_vqa_loader \
-    --model-path models/rbdash-v1-13b \
+    --model-path ./models/rbdash-v1-13b \
     --question-file ./playground/data/eval/MME/rbdash_mme.jsonl \
     --image-folder ./playground/data/eval/MME/MME_Benchmark_release_version \
     --answers-file ./playground/data/eval/MME/answers/rbdash-v1-13b.jsonl \
