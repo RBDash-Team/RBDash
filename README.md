@@ -31,7 +31,7 @@ pip install -e .
 ```
 
 ## Model Zoo
-[RBDash-v1-13b](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main).
+[RBDash-v1-13b](https://huggingface.co/RBDash-Team/rbdash-v1-13b/tree/main)
 ## Evaluation
 In RBDash, we evaluate models on MME.
 ### MME
