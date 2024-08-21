@@ -43,6 +43,7 @@ IS_NEW_TRANSFORMERS = transformers.__version__ >= "4.34.0"
 
 
 class rbdashMetaModel:
+
     def __init__(self, config):
         super(rbdashMetaModel, self).__init__(config)
 
@@ -71,7 +72,6 @@ class rbdashMetaModel:
         mm_vision_select_layer = model_args.mm_vision_select_layer
         mm_vision_select_feature = model_args.mm_vision_select_feature
         pretrain_mm_mlp_adapter = model_args.pretrain_mm_mlp_adapter
-        self.is_dc = "_dc" in model_args.version
 
         self.config.mm_vision_tower = vision_tower
         self.config.mm_vision_tower_aux = vision_tower_aux
@@ -110,10 +110,8 @@ class rbdashMetaModel:
         self.config.mm_projector_type = getattr(
             model_args, "mm_projector_type", "linear"
         )
-        if self.is_dc:
-            self.config.mm_hidden_size = 3072
-        else:
-            self.config.mm_hidden_size = vision_tower.hidden_size
+        # self.config.mm_hidden_size = vision_tower.hidden_size
+        self.config.mm_hidden_size = 3072
         self.config.mm_hidden_size_uni = vision_tower.hidden_size
         self.config.mm_vision_select_layer = mm_vision_select_layer
         self.config.mm_vision_select_feature = mm_vision_select_feature
@@ -177,20 +175,17 @@ class rbdashMetaModel:
             model_args, "optimize_vision_tower_aux", False
         )
 
-        mm_hidden_size_uni = getattr(
-            self.config, "mm_hidden_size_uni", self.config.mm_hidden_size
-        )
         self.vlm_uni_query_projector = nn.Sequential(
-            nn.LayerNorm(mm_hidden_size_uni),
-            nn.Linear(mm_hidden_size_uni, mm_hidden_size_uni),
+            nn.LayerNorm(self.config.mm_hidden_size_uni),
+            nn.Linear(self.config.mm_hidden_size_uni, self.config.mm_hidden_size_uni),
         )
         self.vlm_uni_aux_projector = nn.Sequential(
             nn.LayerNorm(self.config.mm_hidden_size_aux),
-            nn.Linear(self.config.mm_hidden_size_aux, mm_hidden_size_uni),
+            nn.Linear(self.config.mm_hidden_size_aux, self.config.mm_hidden_size_uni),
         )
         self.vlm_uni_val_projector = nn.Sequential(
             nn.LayerNorm(self.config.mm_hidden_size_aux),
-            nn.Linear(self.config.mm_hidden_size_aux, mm_hidden_size_uni),
+            nn.Linear(self.config.mm_hidden_size_aux, self.config.mm_hidden_size_uni),
         )
 
         if pretrain_mm_mlp_adapter is not None:
@@ -201,8 +196,6 @@ class rbdashMetaModel:
                 model_save_path = model_args.model_name_or_path
             else:
                 model_save_path = model_args.model_path
-            if 'intern' in model_save_path.lower():
-                trainable_module += ['vision_tower']
             model_idx_path = getattr(model_args, "model_path", model_save_path)
             if IS_NEW_TRANSFORMERS:
                 try:
@@ -357,9 +350,8 @@ class rbdashMetaForCausalLM(ABC):
                 images = images.flatten(0, 1).contiguous()
 
         image_features, image_forward_outs = self.get_model().get_vision_tower()(images)
-        # image_features = self.get_model().get_vision_tower()(images)
 
-        if image_global:
+        if image_global:  # false
             image_feat_global = image_features[-len(global_images) :]
             image_features = image_features[: len(grid_images)]
 
@@ -418,27 +410,27 @@ class rbdashMetaForCausalLM(ABC):
 
             # token generation
             image_features = image_features + image_aux_features
-        if self.config.mm_hidden_size == 3072:
-            # dense connector
-            image_features_1 = []
-            image_features_2 = []
-            for i in range(0, 12):
-                image_features_1.append(
-                    image_forward_outs.hidden_states[i][:, 1:].to(image_features.dtype)
-                )
-            image_features_1 = torch.stack(image_features_1, dim=0)
-            image_features_1 = torch.sum(image_features_1, dim=0) / 12
-            for i in range(12, 24):
-                image_features_2.append(
-                    image_forward_outs.hidden_states[i][:, 1:].to(image_features.dtype)
-                )
-            image_features_2 = torch.stack(image_features_2, dim=0)
-            image_features_2 = torch.sum(image_features_2, dim=0) / 12
 
-            image_features = torch.cat(
-                [image_features, image_features_1, image_features_2], dim=-1
+        # dense connector
+        image_features_1 = []
+        image_features_2 = []
+        for i in range(0, 12):
+            image_features_1.append(
+                image_forward_outs.hidden_states[i][:, 1:].to(image_features.dtype)
             )
-            ## dense connector end
+        image_features_1 = torch.stack(image_features_1, dim=0)
+        image_features_1 = torch.sum(image_features_1, dim=0) / 12
+        for i in range(12, 24):
+            image_features_2.append(
+                image_forward_outs.hidden_states[i][:, 1:].to(image_features.dtype)
+            )
+        image_features_2 = torch.stack(image_features_2, dim=0)
+        image_features_2 = torch.sum(image_features_2, dim=0) / 12
+
+        image_features = torch.cat(
+            [image_features, image_features_1, image_features_2], dim=-1
+        )
+        ## dense connector end
 
         # process image features after token generation
         image_features = self.get_model().mm_projector(image_features)
@@ -729,7 +721,6 @@ class rbdashMetaForCausalLM(ABC):
         )
 
     def initialize_vision_tokenizer(self, model_args, tokenizer):
-        self.is_dc = "_dc" in model_args.version
         if model_args.mm_use_im_patch_token:
             tokenizer.add_tokens([DEFAULT_IMAGE_PATCH_TOKEN], special_tokens=True)
             self.resize_token_embeddings(len(tokenizer))

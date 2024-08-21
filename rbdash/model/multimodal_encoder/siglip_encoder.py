@@ -1,11 +1,15 @@
 import torch
 import torch.nn as nn
 
-from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
+from transformers import (
+    SiglipVisionModel,
+    SiglipImageProcessor,
+    SiglipVisionConfig,
+)
 from ..processor.video_processor import VideoFramesProcessor
 
 
-class CLIPVisionTower(nn.Module):
+class SiglipVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
         super().__init__()
 
@@ -21,13 +25,13 @@ class CLIPVisionTower(nn.Module):
         elif getattr(args, "unfreeze_mm_vision_tower", False):
             self.load_model()
         else:
-            self.cfg_only = CLIPVisionConfig.from_pretrained(self.vision_tower_name)
+            self.cfg_only = SiglipVisionConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self):
-        self.image_processor = VideoFramesProcessor.from_pretrained(
+        self.image_processor = SiglipImageProcessor.from_pretrained(
             self.vision_tower_name
         )
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name)
+        self.vision_tower = SiglipVisionModel.from_pretrained(self.vision_tower_name)
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True

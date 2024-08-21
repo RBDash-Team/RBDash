@@ -1,1 +1,1 @@
-from .model import RBDashLlamaForCausalLM
+from .model import rbdashLlamaForCausalLM

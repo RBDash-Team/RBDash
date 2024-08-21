@@ -1,11 +1,21 @@
 import torch
 import torch.nn as nn
 
-from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
+from transformers.modeling_utils import PreTrainedModel
 from ..processor.video_processor import VideoFramesProcessor
+from .configuration_intern_vit import InternVisionConfig
+from .modeling_intern_vit import InternVisionModel
 
 
-class CLIPVisionTower(nn.Module):
+class WarpInternVisionModel(PreTrainedModel):
+    config_class = InternVisionConfig
+
+    def __init__(self, config: InternVisionConfig):
+        super().__init__(config)
+        self.vision_model = InternVisionModel(config)
+
+
+class InternVLVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
         super().__init__()
 
@@ -21,13 +31,16 @@ class CLIPVisionTower(nn.Module):
         elif getattr(args, "unfreeze_mm_vision_tower", False):
             self.load_model()
         else:
-            self.cfg_only = CLIPVisionConfig.from_pretrained(self.vision_tower_name)
+            self.cfg_only = InternVisionConfig.from_pretrained(self.vision_tower_name)
 
     def load_model(self):
         self.image_processor = VideoFramesProcessor.from_pretrained(
             self.vision_tower_name
         )
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name)
+        # self.vision_tower = WarpInternVisionModel.from_pretrained(self.vision_tower_name, torch_dtype=torch.bfloat16, trust_remote_code=True)
+        self.vision_tower = InternVisionModel.from_pretrained(
+            self.vision_tower_name, torch_dtype=torch.bfloat16
+        )
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True

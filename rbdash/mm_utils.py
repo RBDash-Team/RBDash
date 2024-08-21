@@ -30,7 +30,7 @@ def process_images(images, image_processor, model_cfg):
     new_images = []
     if image_aspect_ratio == 'pad':
         for image in images:
-            image = expand2square(image, tuple(int(x*255) for x in image_processor.image_mean))
+            image = expand2square(image.convert('RGB'), tuple(int(x*255) for x in image_processor.image_mean))
             image = image_processor.preprocess(image, return_tensors='pt')['pixel_values'][0]
             new_images.append(image)
     else:
@@ -70,9 +70,6 @@ def get_model_name_from_path(model_path):
     else:
         return model_paths[-1]
 
-
-
-
 class KeywordsStoppingCriteria(StoppingCriteria):
     def __init__(self, keywords, tokenizer, input_ids):
         self.keywords = keywords
@@ -87,16 +84,22 @@ class KeywordsStoppingCriteria(StoppingCriteria):
             self.keyword_ids.append(torch.tensor(cur_keyword_ids))
         self.tokenizer = tokenizer
         self.start_len = input_ids.shape[1]
-
-    def __call__(self, output_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        assert output_ids.shape[0] == 1, "Only support batch size 1 (yet)"  # TODO
+    
+    def call_for_batch(self, output_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
         offset = min(output_ids.shape[1] - self.start_len, self.max_keyword_len)
         self.keyword_ids = [keyword_id.to(output_ids.device) for keyword_id in self.keyword_ids]
         for keyword_id in self.keyword_ids:
-            if (output_ids[0, -keyword_id.shape[0]:] == keyword_id).all():
+            truncated_output_ids = output_ids[0, -keyword_id.shape[0]:]
+            if torch.equal(truncated_output_ids, keyword_id):
                 return True
         outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         for keyword in self.keywords:
             if keyword in outputs:
                 return True
         return False
+    
+    def __call__(self, output_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        outputs = []
+        for i in range(output_ids.shape[0]):
+            outputs.append(self.call_for_batch(output_ids[i].unsqueeze(0), scores))
+        return all(outputs)
