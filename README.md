@@ -49,7 +49,7 @@ RBDASH
 
 ```
 ## Model Zoo
-[RBDash-qwen-v1.2-72b](https://huggingface.co/RBDash-Team/RBDash-qwen-v1.2-72b)
+[RBDash-v1.2-72b](https://huggingface.co/RBDash-Team/RBDash-v1.2-72b)
 
 ## Evaluation
 In RBDash, we evaluate models on MME.

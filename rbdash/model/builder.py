@@ -66,86 +66,10 @@ def load_pretrained_model(
     if use_flash_attn:
         kwargs["attn_implementation"] = "flash_attention_2"
 
-    if "rbdash" in model_name.lower():
-        # Load rbdash model
-        if model_base is not None:
-            # this may be mm projector only
-            print("Loading rbdash from base model...")
-
-            if "8x7b" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_base)
-                model = rbdashMixtralForCausalLM.from_pretrained(
-                    model_base, low_cpu_mem_usage=True, **kwargs
-                )
-            elif "2b" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_base)
-                model = rbdashGemmaForCausalLM.from_pretrained(
-                    model_base, low_cpu_mem_usage=True, **kwargs
-                )
-            else:
-                tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-                model = rbdashLlamaForCausalLM.from_pretrained(
-                    model_base, low_cpu_mem_usage=True, **kwargs
-                )
-            mm_projector_weights = torch.load(
-                os.path.join(model_path, "mm_projector.bin"), map_location="cpu"
-            )
-            mm_projector_weights = {
-                k: v.to(torch.float16) for k, v in mm_projector_weights.items()
-            }
-            model.load_state_dict(mm_projector_weights, strict=False)
-        else:
-            if "8x7b" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_path)
-                model = rbdashMixtralForCausalLM.from_pretrained(model_path, **kwargs)
-            elif "qwen" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_path)
-                if "A14" in model_name:
-                    model = rbdashQwen2MoeForCausalLM.from_pretrained(
-                        model_path, low_cpu_mem_usage=True, **kwargs
-                    )
-                else:
-                    model = rbdashQwen2ForCausalLM.from_pretrained(
-                        model_path, low_cpu_mem_usage=True, **kwargs
-                    )
-            elif "2b" in model_name.lower() and "gemma" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_path)
-                model = rbdashGemmaForCausalLM.from_pretrained(
-                    model_path, low_cpu_mem_usage=True, **kwargs
-                )
-            else:
-                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
-                model = rbdashLlamaForCausalLM.from_pretrained(
-                    model_path, low_cpu_mem_usage=True, **kwargs
-                )
-
-    else:
-        # Load language model
-        if model_base is not None:
-            # PEFT model
-            from peft import PeftModel
-
-            tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-            model = AutoModelForCausalLM.from_pretrained(
-                model_base, low_cpu_mem_usage=True, **kwargs
-            )
-            print(f"Loading LoRA weights from {model_path}")
-            model = PeftModel.from_pretrained(model, model_path)
-            print(f"Merging weights")
-            model = model.merge_and_unload()
-            print("Convert to FP16...")
-            model.to(torch.float16)
-        else:
-            if "mpt" in model_name.lower():
-                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_path, low_cpu_mem_usage=True, trust_remote_code=True, **kwargs
-                )
-            else:
-                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_path, low_cpu_mem_usage=True, **kwargs
-                )
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    model = rbdashQwen2ForCausalLM.from_pretrained(
+        model_path, low_cpu_mem_usage=True, **kwargs
+    )
 
     image_processor = None
 

@@ -5,7 +5,7 @@ gpu_list="${CUDA_VISIBLE_DEVICES:-0}"
 IFS='|' read -ra GPULIST <<<"$gpu_list"
 CHUNKS=${#GPULIST[@]}
 
-CKPT="RBDash-qwen-v1.2-72b"
+CKPT="RBDash-v1.2-72b"
 
 for IDX in $(seq 0 $((CHUNKS - 1))); do
 	CUDA_VISIBLE_DEVICES=${GPULIST[$IDX]} python -m rbdash.eval.model_vqa_loader \
