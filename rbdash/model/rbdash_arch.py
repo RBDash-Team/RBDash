@@ -201,8 +201,7 @@ class rbdashMetaModel:
                 model_save_path = model_args.model_name_or_path
             else:
                 model_save_path = model_args.model_path
-            if 'intern' in model_save_path.lower():
-                trainable_module += ['vision_tower']
+            trainable_module += ['vision_tower']
             model_idx_path = getattr(model_args, "model_path", model_save_path)
             if IS_NEW_TRANSFORMERS:
                 try:
