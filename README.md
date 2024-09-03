@@ -35,7 +35,7 @@ pip install -e .
 ```
 
 ## Pretrained Weights
-We recommend users to download the pretrained weights from the following link [OpenCLIP-ConvNeXt-L](https://huggingface.co/laion/CLIP-convnext_large_d_320.laion2B-s29B-b131K-ft-soup), [CLIP-Vit-L-336](https://huggingface.co/openai/clip-vit-large-patch14-336),and put them in model_zoo following Structure.
+We recommend users to download the pretrained weights from the following link [OpenCLIP-ConvNeXt-L](https://huggingface.co/laion/CLIP-convnext_large_d_320.laion2B-s29B-b131K-ft-soup), [InternViT-6B-448px-V1-5](https://huggingface.co/OpenGVLab/InternViT-6B-448px-V1-5/tree/main),and put them in model_zoo following Structure.
 ### Structure
 ```bash
 RBDASH
@@ -43,7 +43,7 @@ RBDASH
 ├── scripts
 ├── model_zoo
 │   ├── OpenAI
-│   │   ├── clip-vit-large-patch14-336
+│   │   ├── InternViT-6B-448px-V1-5
 │   │   ├── openclip-convnext-large-d-320-laion2B-s29B-b131K-ft-soup
 │   │   ├── ...
 
