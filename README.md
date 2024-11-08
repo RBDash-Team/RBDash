@@ -1,4 +1,4 @@
-# RBDash v1.2
+# RBDash v1.5
 
 
 
@@ -56,7 +56,7 @@ In RBDash, we evaluate models on MME.
 ### MME
 1. Download the data following the official instructions [here](https://github.com/BradyFU/Awesome-Multimodal-Large-Language-Models/tree/Evaluation).
 2. Downloaded images to ./rbdash-Eval/MME/MME_Benchmark_release_version.
-3. Downloaded and put the weights to ./models/RBDash-v1.2-72b
+3. Downloaded and put the weights to ./models/RBDash-v1.5
 4. inference and evaluate.
 ```bash
 bash scripts/rbdash/eval/mme.sh
